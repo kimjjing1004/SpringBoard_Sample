@@ -6,7 +6,8 @@ SELECT A.EMPCD 사원코드,
        A.EMPNM 사원명,
        A.EMPZIPCD ZIP코드,
        B.VALUE 주소
-FROM EMPBASICS_T A, COMCD_T B
+FROM EMPBASICS_T A,
+     COMCD_T B
 WHERE B.DIV = 'zip'
   AND A.EMPZIPCD = B.CODE
 ORDER BY A.EMPCD;
@@ -32,18 +33,20 @@ ORDER BY TO_NUMBER(B.YEAR);
 -- 사원별 가족관계를 조회 (본인도 포함하여 조회)
 -- 테이블 : EMPBASICS_T, EMPFAMILY_T, FAMILYINFO_T, COMCD_T
 -- 조회항목 : 사원코드, 가족관계코드, 가족관계명, 가족명
+SELECT * FROM EMPBASICS_T;
+SELECT * FROM FAMILYINFO_T;
 SELECT A.EMPCD 사원코드,
        B.RELACD 가족관계코드,
-       DECODE((SELECT D.CODE FROM COMCD_T WHERE D.DIV = 'rela'), 1, D.VALUE, D.VALUE) 가족관계명,
-       C.FAMILYNAME 가족명
+       C.VALUE 가족관계명,
+       DECODE(C.CODE, '1', A.EMPNM, D.FAMILYNAME) 가족명
 FROM EMPBASICS_T A,
      EMPFAMILY_T B,
-     FAMILYINFO_T C,
-     COMCD_T D
+     (SELECT CODE, VALUE FROM COMCD_T WHERE DID = 'rela') C,
+     FAMILYINFO_T D
 WHERE A.EMPCD = B.EMPCD
-  AND A.EMPCD = C.EMPCD
-  AND B.RELACD = C.RELACD (+)
-  AND B.RELACD = D.CODE(+);
+  AND B.EMPCD = C.CODE
+  AND B.RELACD = D.RELACD (+)
+  AND B.RELACD = D.EMPCD (+);
 
 -- 4.
 -- 사원별 가족관계 및 자녀수당, 노인수당여부와 수당금액을 조회(사원코드, 가족관계코드 오름차순 정렬)
